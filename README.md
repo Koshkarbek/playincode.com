@@ -127,3 +127,4 @@ NEXT_PUBLIC_WHATSAPP_NUMBER=your_new_number
 
 For questions, refer to the design document:
 `docs/superpowers/specs/2026-04-07-code-play-landing-design.md`
+
