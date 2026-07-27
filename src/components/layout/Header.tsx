@@ -71,9 +71,9 @@ export function Header() {
           <Image
             src="/logo.png"
             alt={content.header.logoAlt}
-            width={1012}
-            height={259}
-            sizes="(max-width: 768px) 180px, 260px"
+            width={347}
+            height={191}
+            sizes="116px"
             quality={100}
             priority
             className="h-16 w-auto object-contain"

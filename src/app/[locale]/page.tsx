@@ -22,8 +22,13 @@ import {
 } from "@/lib/seo/jsonLd";
 import { getContent, Locale } from "@/content";
 
-export default function Home({ params }: { params: { locale: string } }) {
-  const locale: Locale = params.locale === "en" ? "en" : "ru";
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: rawLocale } = await params;
+  const locale: Locale = rawLocale === "en" ? "en" : "ru";
   const content = getContent(locale);
   const org = buildEducationalOrganization(locale);
   const site = buildWebSite(locale);

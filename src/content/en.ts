@@ -360,9 +360,9 @@ export const content = {
     individualFormatDescription: "100% individual format",
     list: [
       { label: "years of teaching children programming", value: "3+" },
-      { label: "children taught", value: "100+" },
-      { label: "countries where our students live", value: "10+" },
-      { label: "cities where children study with us", value: "20+" },
+      { label: "children taught", value: "127+" },
+      { label: "countries where our students live", value: "12+" },
+      { label: "cities where children study with us", value: "24+" },
       { label: "individual format", value: "100%" },
       { label: "parents recommend us to others", value: "95%" },
     ],

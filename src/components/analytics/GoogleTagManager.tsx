@@ -10,7 +10,7 @@ export function GoogleTagManager() {
     <>
       <Script
         id="gtm-init"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{ __html: init }}
       />
       <noscript>

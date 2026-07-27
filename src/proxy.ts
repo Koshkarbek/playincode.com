@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const DEFAULT_LOCALE = "ru";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname === "/ru" || pathname.startsWith("/ru/")) {
@@ -31,6 +31,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next|api|opengraph-image|twitter-image|icon|apple-icon|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|llms.txt|.*\\..*).*)",
+    "/((?!_next|api|assets|t(?:/|$)|school(?:/|$)|opengraph-image|twitter-image|icon|apple-icon|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|llms.txt|.*\\..*).*)",
   ],
 };

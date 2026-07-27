@@ -3,7 +3,10 @@ import { getSiteUrl } from "@/lib/seo/siteUrl";
 
 export default function robots(): MetadataRoute.Robots {
   const site = getSiteUrl();
-  const allowAll = { allow: "/", disallow: ["/api/"] };
+  const allowAll = {
+    allow: "/",
+    disallow: ["/api/", "/school", "/t/"],
+  };
 
   return {
     rules: [

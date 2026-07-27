@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getContent, Locale } from "@/content";
 import { getSiteUrl } from "@/lib/seo/siteUrl";
+import { Providers } from "@/app/providers";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
+import { YandexMetrika } from "@/components/analytics/YandexMetrika";
 
 const LOCALES: Locale[] = ["ru", "en"];
 
@@ -16,12 +20,13 @@ function resolveLocale(raw: string): Locale {
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  if (!LOCALES.includes(params.locale as Locale)) {
+  const { locale: rawLocale } = await params;
+  if (!LOCALES.includes(rawLocale as Locale)) {
     return {};
   }
-  const locale = resolveLocale(params.locale);
+  const locale = resolveLocale(rawLocale);
   const seo = getContent(locale).seo;
   const canonical = locale === "en" ? "/en" : "/";
 
@@ -80,15 +85,25 @@ export async function generateMetadata({
   };
 }
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: {
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  if (!LOCALES.includes(params.locale as Locale)) {
+  const { locale: rawLocale } = await params;
+  if (!LOCALES.includes(rawLocale as Locale)) {
     notFound();
   }
-  return <>{children}</>;
+  const locale = resolveLocale(rawLocale);
+
+  return (
+    <>
+      <GoogleTagManager />
+      <Providers locale={locale}>{children}</Providers>
+      <GoogleAnalytics />
+      <YandexMetrika />
+    </>
+  );
 }

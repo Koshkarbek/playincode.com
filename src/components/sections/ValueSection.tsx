@@ -2,12 +2,13 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { Check } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Container } from "@/components/ui/Container";
 import { useContent } from "@/lib/i18n";
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -15,12 +16,12 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-const benefitItemVariants = {
+const benefitItemVariants: Variants = {
   hidden: { x: -10, opacity: 0 },
   visible: { x: 0, opacity: 1, transition: { duration: 0.4, ease: "easeOut" } },
 };

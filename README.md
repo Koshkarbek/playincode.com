@@ -1,130 +1,120 @@
-# Play In Code Landing Page
+# Play In Code
 
-High-converting landing page for Play In Code online programming school.
+Единое Next.js-приложение для сайта школы и двуязычного теста профиля ребёнка.
 
-## Quick Start
+## Маршруты
 
-### Prerequisites
-- Node.js 18+
-- npm or yarn
+- `/` и `/en` — русский и английский лендинг;
+- `/privacy-policy`, `/terms`, `/consent-to-data-processing` и их EN-версии;
+- `/t/[token]` — одноразовая персональная ссылка теста;
+- `/school` — защищённая панель школы;
+- `/api/test/[token]`, `/api/school`, `/api/school/auth` — внутренние API.
 
-### Installation
+Лендинг, тест, панель и API собираются одним Next.js-проектом. Внешних rewrites
+и отдельного Cloudflare-приложения нет.
+
+## Локальный запуск
+
+Требуются Node.js 20.9+ и npm.
 
 ```bash
 npm install
-```
-
-### Development
-
-```bash
+cp .env.example .env.local
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Сайт будет доступен на [http://localhost:3000](http://localhost:3000).
+Для локальной разработки используется встроенная PostgreSQL-совместимая база
+PGlite в `.data/`; production использует Neon.
 
-## Building for Production
-
-```bash
-npm run build
-npm start
-```
-
-## Environment Variables
-
-Create `.env.local`:
+## Переменные окружения
 
 ```env
-NEXT_PUBLIC_WHATSAPP_NUMBER=77772270088
-NEXT_PUBLIC_WHATSAPP_DISPLAY=+7 777 227 0088
+NEXT_PUBLIC_WHATSAPP_NUMBER=77029003890
+NEXT_PUBLIC_WHATSAPP_DISPLAY=+7 702 900 3890
+NEXT_PUBLIC_SITE_URL=https://school.playincode.com
+
+NEXT_PUBLIC_GTM_ID=
+NEXT_PUBLIC_GA_ID=
+NEXT_PUBLIC_YANDEX_METRIKA_ID=
+NEXT_PUBLIC_GSC_VERIFICATION=
+
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+APP_BASE_URL=https://school.playincode.com
+ADMIN_PASSWORD=replace-with-a-strong-admin-password
+SESSION_SECRET=replace-with-at-least-32-random-characters
+LINK_ENCRYPTION_KEY=replace-with-a-different-random-secret
 ```
 
-## Project Structure
+`SESSION_SECRET` и `LINK_ENCRYPTION_KEY` должны быть разными случайными
+секретами. Их можно создать командой `openssl rand -base64 32`.
 
-- `/src/app` — Next.js pages and layouts
-- `/src/components` — React components (layout, sections, UI)
-- `/src/content` — Russian copy (ru.ts)
-- `/src/lib` — Utilities (WhatsApp builder, constants, types)
-- `/public` — Static assets (logo, favicon)
+Для localhost вместо Neon используется:
 
-## Content Editing
-
-All Russian copy is centralized in `src/content/ru.ts`. Edit this file to update:
-- Section headings and descriptions
-- Benefit cards
-- Course information
-- FAQ items
-- Reviews and case studies
-
-## Styling
-
-Uses Tailwind CSS. Core colors configured in:
-- `tailwind.config.ts` — Theme colors and spacing
-- `src/lib/constants.ts` — Brand color constants
-- `src/app/globals.css` — Global styles and CSS variables
-
-## Testing
-
-```bash
-npm test                    # Run all tests
-npm test -- --watch        # Watch mode
-npm run type-check        # TypeScript check
-npm run lint              # ESLint check
-npm run format            # Prettier format
-```
-
-## Deployment
-
-Build is optimized for Vercel, Netlify, or any Node.js host:
-
-```bash
-npm run build
-npm start
-```
-
-## Key Features
-
-- ✅ Mobile-first responsive design
-- ✅ 14 optimized landing sections
-- ✅ Single-click WhatsApp CTA flow
-- ✅ Accessibility (WCAG AA)
-- ✅ Performance optimized (Lighthouse 85+)
-- ✅ TypeScript for type safety
-- ✅ SEO ready (meta tags, structured data)
-
-## Maintenance
-
-### Update Placeholder Stats
-
-In `src/content/ru.ts`, search for `[X]+` patterns:
-- `[5]+` → years of experience
-- `[500]+` → students
-- `[15]+` → countries
-- `[30]+` → cities
-
-Replace `[X]` with actual numbers.
-
-### Add Reviews
-
-Add new review objects to `content.reviews.list` in `ru.ts`:
-
-```typescript
-{
-  id: "review-new",
-  quote: "Parent testimonial here...",
-  author: "Parent name",
-  country: "Country"
-}
-```
-
-### Change WhatsApp Number
-
-Update `.env.local`:
 ```env
-NEXT_PUBLIC_WHATSAPP_NUMBER=your_new_number
+DATABASE_URL=file:.data/profile-test
+APP_BASE_URL=http://localhost:3000
 ```
 
-## Support
+## База данных
 
-For questions, refer to the design document:
-`docs/superpowers/specs/2026-04-07-code-play-landing-design.md`
+Схема описана в `src/db/schema.ts`, а проверяемые SQL-миграции находятся в
+`drizzle/`.
 
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+`db:migrate` нужно выполнить после создания `.env.local` и до первого запуска
+панели/теста. Для production значение `DATABASE_URL` выдаёт Neon. Таблицы во
+время HTTP-запросов не создаются.
+
+## Структура
+
+- `src/app` — страницы и API Next.js;
+- `src/features/profile-test` — контент RU/EN, клиенты теста и панели,
+  scoring, шифрование и серверная авторизация;
+- `src/db` — Neon/Drizzle;
+- `src/components`, `src/content`, `src/lib` — лендинг;
+- `drizzle` — PostgreSQL-миграции;
+- `public` — статические файлы.
+
+Стили теста ограничены контейнером `.profile-test-root`. Аналитика подключается
+только внутри языкового layout лендинга и не запускается на `/t/...` или
+`/school`.
+
+## Проверки
+
+```bash
+npm run lint
+npm run type-check
+npm test -- --runInBand
+npm run build
+```
+
+## Vercel
+
+Проект рассчитан на один существующий Vercel project и домен
+`school.playincode.com`.
+
+Перед Preview deployment:
+
+1. подключить Neon из Vercel Marketplace;
+2. добавить серверные секреты и `APP_BASE_URL`;
+3. применить `npm run db:migrate`;
+4. проверить Preview;
+5. только после проверки перевести production на новый deployment.
+
+Старая D1-база не переносится. После запуска в `/school` создаётся новый пакет
+ссылок.
+
+## Безопасность теста
+
+- открытый токен хранится только в AES-GCM-зашифрованном виде, отдельно хранится
+  его SHA-256-хеш;
+- ребёнок не получает A–D, профиль или рекомендации из API;
+- панель использует HttpOnly cookie, проверку Origin и ограничение попыток входа;
+- ФИО, телефоны, класс и IP ребёнка не сохраняются;
+- персональные страницы и панель исключены из индексации;
+- удаление записи сразу делает её ссылку недействительной.

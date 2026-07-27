@@ -15,7 +15,6 @@ export function JsonLd({
           <script
             key={idx}
             type="application/ld+json"
-            /* eslint-disable-next-line react/no-danger */
             dangerouslySetInnerHTML={{ __html: json }}
           />
         );

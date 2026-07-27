@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Code2, Gamepad2, Sparkles } from "lucide-react";
@@ -46,7 +47,7 @@ function AnimatedTextCycle({
     return () => clearInterval(timer);
   }, [interval, words.length]);
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { y: -20, opacity: 0, filter: "blur(8px)" },
     visible: {
       y: 0,
@@ -107,7 +108,7 @@ function AnimatedTextCycle({
 // AnimatedGroup
 // ---------------------------------------------------------------------------
 
-const transitionVariants = {
+const transitionVariants: { item: Variants } = {
   item: {
     hidden: { opacity: 0, filter: "blur(12px)", y: 12 },
     visible: {

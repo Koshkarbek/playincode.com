@@ -1,41 +1,47 @@
 {
   "name": "code-play-landing",
   "version": "1.0.0",
-  "description": "Play In Code landing page for trial lesson booking",
+  "description": "Play In Code school website and bilingual student profile test",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint --fix",
+    "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "type-check": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@neondatabase/serverless": "1.1.0",
+    "drizzle-orm": "0.45.2",
     "embla-carousel-react": "^8.6.0",
-    "framer-motion": "^10.16.0",
-    "lucide-react": "^0.263.0",
-    "next": "^14.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "framer-motion": "12.42.2",
+    "lucide-react": "1.27.0",
+    "next": "16.2.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.1.0",
-    "@testing-library/react": "^14.1.0",
-    "@types/jest": "^29.5.0",
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
+    "@electric-sql/pglite": "^0.5.4",
+    "@testing-library/jest-dom": "7.0.0",
+    "@testing-library/react": "16.3.2",
+    "@types/jest": "30.0.0",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "autoprefixer": "^10.4.0",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "^14.0.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
+    "dotenv": "17.2.3",
+    "drizzle-kit": "0.31.10",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.12",
+    "jest": "30.4.2",
+    "jest-environment-jsdom": "30.4.1",
     "postcss": "^8.4.0",
     "prettier": "^3.1.0",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5.3.0"
+    "typescript": "5.9.3"
   }
 }
-

@@ -11,7 +11,6 @@ export function YandexMetrika() {
       <Script
         id="yandex-metrika-init"
         strategy="afterInteractive"
-        /* eslint-disable-next-line react/no-danger */
         dangerouslySetInnerHTML={{ __html: init }}
       />
       <noscript>

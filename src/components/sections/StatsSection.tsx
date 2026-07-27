@@ -8,6 +8,7 @@ import {
   useInView,
   useSpring,
 } from "framer-motion";
+import type { Variants } from "framer-motion";
 import {
   Users,
   Globe,
@@ -112,12 +113,12 @@ export function StatsSection() {
   const y1 = useTransform(scrollYProgress, [0, 1], [0, -50]);
   const y2 = useTransform(scrollYProgress, [0, 1], [0, 50]);
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
   };

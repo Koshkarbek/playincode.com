@@ -1,5 +1,8 @@
 # Implementation Summary
 
+> Историческое описание первой версии лендинга. Актуальная архитектура единого
+> проекта (лендинг + тест + Neon) описана в `README.md`.
+
 **Status:** ✅ Complete - Ready for Review+Debug
 
 **Date:** 2026-04-07  

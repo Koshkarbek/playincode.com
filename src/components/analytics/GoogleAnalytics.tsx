@@ -15,7 +15,6 @@ export function GoogleAnalytics() {
       <Script
         id="ga-init"
         strategy="afterInteractive"
-        /* eslint-disable-next-line react/no-danger */
         dangerouslySetInnerHTML={{ __html: init }}
       />
     </>

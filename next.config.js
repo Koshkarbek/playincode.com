@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     unoptimized: false,
     formats: ["image/avif", "image/webp"],
+    qualities: [75, 100],
   },
   headers: async () => [
     {
