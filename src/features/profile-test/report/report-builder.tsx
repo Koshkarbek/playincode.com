@@ -160,6 +160,7 @@ export function ReportBuilder({
           draft={draft}
           logoUrl={`${window.location.origin}/report-logo.png`}
           fontBaseUrl={`${window.location.origin}/fonts`}
+          profileImageBaseUrl={`${window.location.origin}/student-profiles`}
         />,
       ).toBlob();
       const href = URL.createObjectURL(blob);

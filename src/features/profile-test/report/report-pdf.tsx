@@ -118,6 +118,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F8F7",
   },
   recommendationTitle: { marginBottom: 3, fontWeight: 700 },
+  profileSummaryCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginTop: 15,
+    padding: 12,
+    borderRadius: 7,
+    backgroundColor: PALE,
+  },
+  profileImageCard: {
+    width: 155,
+    height: 155,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 6,
+    borderWidth: 1,
+    borderColor: "#DCE8D8",
+    borderRadius: 6,
+    backgroundColor: "#FFFFFF",
+  },
+  profileImage: {
+    width: 143,
+    height: 143,
+    objectFit: "contain",
+  },
+  profileSummaryText: { flex: 1 },
   footer: {
     marginTop: "auto",
     paddingTop: 10,
@@ -233,10 +259,12 @@ export function StudentReportDocument({
   draft,
   logoUrl,
   fontBaseUrl,
+  profileImageBaseUrl,
 }: {
   draft: StudentReportDraft;
   logoUrl: string;
   fontBaseUrl: string;
+  profileImageBaseUrl: string;
 }) {
   Font.register({
     family: "Manrope",
@@ -426,11 +454,21 @@ export function StudentReportDocument({
           </View>
         </View>
 
-        <View style={[styles.profileCard, { marginTop: 24 }]}>
-          <Text style={styles.profileTitle}>
-            {template.profileTitle[locale]}
-          </Text>
-          <Text>{template.profileDescription[locale]}</Text>
+        <View style={styles.profileSummaryCard} wrap={false}>
+          <View style={styles.profileImageCard}>
+            {/* @react-pdf Image does not expose the HTML alt attribute. */}
+            {/* eslint-disable-next-line jsx-a11y/alt-text */}
+            <Image
+              src={`${profileImageBaseUrl}/${draft.profileKey}.png`}
+              style={styles.profileImage}
+            />
+          </View>
+          <View style={styles.profileSummaryText}>
+            <Text style={styles.profileTitle}>
+              {template.profileTitle[locale]}
+            </Text>
+            <Text>{template.profileDescription[locale]}</Text>
+          </View>
         </View>
         <Footer locale={locale} pageNumber={3} />
       </Page>

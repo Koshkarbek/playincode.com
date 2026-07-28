@@ -69,11 +69,11 @@ export function Header() {
           className="flex items-center text-foreground hover:opacity-80 transition-opacity"
         >
           <Image
-            src="/logo.png"
+            src="/logo.svg"
             alt={content.header.logoAlt}
-            width={347}
-            height={191}
-            sizes="116px"
+            width={306}
+            height={64}
+            sizes="(max-width: 768px) 220px, 306px"
             quality={100}
             priority
             className="h-16 w-auto object-contain"
