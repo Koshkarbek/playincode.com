@@ -9,6 +9,7 @@ import type {
   Question,
   ScoreVector,
 } from "@/features/profile-test/types";
+import { ReportBuilder } from "@/features/profile-test/report/report-builder";
 
 type Batch = {
   id: string;
@@ -138,6 +139,7 @@ const translations = {
     csvCompleted: "Завершён",
     csvStatus: "Статус",
     csvProfile: "Итоговый профиль",
+    createReport: "Составить профиль",
   },
   en: {
     title: "Test Results",
@@ -220,6 +222,7 @@ const translations = {
     csvCompleted: "Completed",
     csvStatus: "Status",
     csvProfile: "Final profile",
+    createReport: "Create student profile",
   },
 } as const;
 
@@ -265,6 +268,11 @@ export function SchoolClient() {
   const [workflowFilter, setWorkflowFilter] =
     useState<WorkflowFilter>("all");
   const [codeSearch, setCodeSearch] = useState("");
+  const [reportTarget, setReportTarget] = useState<{
+    invitationId: string;
+    profileKey: ProfileKey;
+    locale: Locale;
+  } | null>(null);
   const ui = translations[locale];
 
   function changeLocale(next: Locale) {
@@ -943,6 +951,22 @@ export function SchoolClient() {
                                 </ol>
                               </>
                             ) : null}
+                            {invitation.status === "completed" &&
+                            invitation.profileKey ? (
+                              <button
+                                type="button"
+                                className="primary-button"
+                                onClick={() =>
+                                  setReportTarget({
+                                    invitationId: invitation.id,
+                                    profileKey: invitation.profileKey as ProfileKey,
+                                    locale: invitation.locale ?? locale,
+                                  })
+                                }
+                              >
+                                {ui.createReport}
+                              </button>
+                            ) : null}
                             <button
                               type="button"
                               className="danger-button"
@@ -964,6 +988,23 @@ export function SchoolClient() {
           </div>
         )}
       </section>
+      {reportTarget ? (
+        <div
+          className="report-builder-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="report-builder-title"
+        >
+          <div className="report-builder-dialog">
+            <ReportBuilder
+              key={reportTarget.invitationId}
+              profileKey={reportTarget.profileKey}
+              initialLocale={reportTarget.locale}
+              onClose={() => setReportTarget(null)}
+            />
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
