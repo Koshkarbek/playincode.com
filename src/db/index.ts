@@ -29,10 +29,11 @@ async function createDatabase(
 }
 
 export async function getDb(): Promise<NeonHttpDatabase<typeof schema>> {
-  const url = process.env.DATABASE_URL;
+  const url =
+    process.env.playincode_db_DATABASE_URL ?? process.env.DATABASE_URL;
   if (!url) {
     throw new Error(
-      "Missing DATABASE_URL. Connect Neon to this Vercel project or add DATABASE_URL to .env.local.",
+      "Missing playincode_db_DATABASE_URL or DATABASE_URL. Connect Neon to this Vercel project or add DATABASE_URL to .env.local.",
     );
   }
 

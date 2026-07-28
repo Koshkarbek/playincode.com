@@ -39,7 +39,9 @@ NEXT_PUBLIC_GA_ID=
 NEXT_PUBLIC_YANDEX_METRIKA_ID=
 NEXT_PUBLIC_GSC_VERIFICATION=
 
-DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+# Vercel's Neon integration uses playincode_db_DATABASE_URL.
+# DATABASE_URL remains supported for local development and other providers.
+playincode_db_DATABASE_URL=postgresql://user:password@host/database?sslmode=require
 APP_BASE_URL=https://school.playincode.com
 ADMIN_PASSWORD=replace-with-a-strong-admin-password
 SESSION_SECRET=replace-with-at-least-32-random-characters
@@ -67,7 +69,8 @@ npm run db:migrate
 ```
 
 `db:migrate` нужно выполнить после создания `.env.local` и до первого запуска
-панели/теста. Для production значение `DATABASE_URL` выдаёт Neon. Таблицы во
+панели/теста. Для production значение `playincode_db_DATABASE_URL` выдаёт Neon
+(также поддерживается стандартное `DATABASE_URL`). Таблицы во
 время HTTP-запросов не создаются.
 
 ## Структура

@@ -4,12 +4,13 @@ import { defineConfig } from "drizzle-kit";
 config({ path: ".env.local", quiet: true });
 config({ quiet: true });
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl =
+  process.env.playincode_db_DATABASE_URL ?? process.env.DATABASE_URL;
 const isMigrationCommand = process.argv.includes("migrate");
 
 if (!databaseUrl && isMigrationCommand) {
   throw new Error(
-    "DATABASE_URL is missing. Create .env.local and paste the Neon connection string before running npm run db:migrate.",
+    "playincode_db_DATABASE_URL and DATABASE_URL are missing. Connect Neon or add DATABASE_URL to .env.local before running npm run db:migrate.",
   );
 }
 
