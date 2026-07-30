@@ -24,7 +24,7 @@ export function buildEducationalOrganization(locale: Locale) {
     name: "Play In Code",
     alternateName: "PlayInCode",
     url: orgUrl(locale),
-    logo: `${site}/logo.png`,
+    logo: `${site}/logo.svg`,
     image: `${site}/opengraph-image`,
     description: content.seo.description,
     inLanguage: locale === "en" ? ["en", "ru"] : ["ru", "en"],

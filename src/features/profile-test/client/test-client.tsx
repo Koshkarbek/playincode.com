@@ -50,12 +50,20 @@ function Brand() {
   return (
     <div className={styles.brand}>
       <Image
-        src="/logo.png"
+        src="/logo.svg"
         alt="Play In Code"
-        width={166}
-        height={58}
+        width={258}
+        height={54}
         priority
-        className={styles.logo}
+        className={cn(styles.logo, styles.desktopLogo)}
+      />
+      <Image
+        src="/frame-48095626.svg"
+        alt="Play In Code"
+        width={1024}
+        height={1024}
+        priority
+        className={cn(styles.logo, styles.mobileLogo)}
       />
       <span className={styles.brandDivider} aria-hidden="true" />
       <span className={styles.brandLabel}>Profile test</span>

@@ -65,6 +65,10 @@
   object-fit: contain;
 }
 
+.mobileLogo {
+  display: none;
+}
+
 .brandDivider {
   width: 1px;
   height: 24px;
@@ -631,7 +635,15 @@
   }
 
   .logo {
-    width: 112px;
+    width: 72px;
+  }
+
+  .desktopLogo {
+    display: none;
+  }
+
+  .mobileLogo {
+    display: block;
   }
 
   .brandLabel {
