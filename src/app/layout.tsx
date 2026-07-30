@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { getSiteUrl } from "@/lib/seo/siteUrl";
 import type { Locale } from "@/content";
+import "@fontsource/manrope/400.css";
+import "@fontsource/manrope/600.css";
+import "@fontsource/manrope/700.css";
+import "@fontsource/unbounded/600.css";
 import "./globals.css";
 import "@/features/profile-test/profile-test.css";
 

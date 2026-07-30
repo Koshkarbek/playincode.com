@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
   const site = getSiteUrl();
   const allowAll = {
     allow: "/",
-    disallow: ["/api/", "/school", "/t/"],
+    disallow: ["/api/", "/school", "/t/", "/profile-test"],
   };
 
   return {

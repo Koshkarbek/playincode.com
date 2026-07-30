@@ -8,7 +8,6 @@ import {
 } from "@/features/profile-test/server/admin-auth";
 import { profiles, questions } from "@/features/profile-test/content";
 import {
-  decryptToken,
   encryptToken,
   randomCode,
   randomToken,
@@ -49,21 +48,11 @@ export async function GET(request: NextRequest) {
   }
 
   const publicBaseUrl = getPublicBaseUrl(request);
-  const encryptionKey = getRuntimeValue("LINK_ENCRYPTION_KEY");
   const invitationPayload = await Promise.all(
     invitationRows.map(async (invitation) => {
-      let url: string | null = null;
-      if (invitation.tokenCiphertext) {
-        try {
-          const token = await decryptToken(
-            invitation.tokenCiphertext,
-            encryptionKey,
-          );
-          url = `${publicBaseUrl}/t/${token}`;
-        } catch {
-          url = null;
-        }
-      }
+      const url = invitation.tokenCiphertext
+        ? `${publicBaseUrl}/profile-test`
+        : null;
 
       return {
         id: invitation.id,
@@ -101,6 +90,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(
     {
+      testUrl: `${publicBaseUrl}/profile-test`,
       content: { profiles, questions },
       batches: batchRows.map((batch) => ({
         id: batch.id,
@@ -286,7 +276,7 @@ export async function POST(request: NextRequest) {
     batch: { id: batchId, createdAt, quantity: count },
     links: generated.map((item) => ({
       code: item.code,
-      url: `${publicBaseUrl}/t/${item.token}`,
+      url: `${publicBaseUrl}/profile-test`,
     })),
   });
 }

@@ -269,17 +269,6 @@
   min-width: 130px;
 }
 
-.profile-test-root .link-cell {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  min-width: 420px;
-}
-
-.profile-test-root .link-cell input {
-  width: 330px;
-}
-
 .profile-test-root .unavailable-link {
   display: grid;
   gap: 4px;
@@ -384,6 +373,397 @@
 
 .profile-test-root .primary-button:hover:not(:disabled) {
   background: #50b43a;
+}
+
+/* School admin */
+.profile-test-root .school-page,
+.profile-test-root .school-dashboard {
+  --admin-ink: #18302a;
+  --admin-muted: #687a74;
+  --admin-line: #dce8e2;
+  --admin-green: #4fbd3b;
+  --admin-green-dark: #226a28;
+  --admin-wash: #f3f8f5;
+  font-family: "Manrope", sans-serif;
+}
+
+.profile-test-root .school-page {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 15%, rgb(96 200 73 / 16%), transparent 28rem),
+    radial-gradient(circle at 88% 82%, rgb(75 145 126 / 12%), transparent 25rem),
+    #f3f8f5;
+}
+
+.profile-test-root .school-page::before,
+.profile-test-root .school-page::after {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border: 1px solid rgb(34 106 40 / 12%);
+  border-radius: 50%;
+  content: "";
+}
+
+.profile-test-root .school-page::before {
+  top: -160px;
+  right: 9%;
+}
+
+.profile-test-root .school-page::after {
+  bottom: -190px;
+  left: 6%;
+}
+
+.profile-test-root .school-page .login-card {
+  position: relative;
+  z-index: 1;
+  padding: 38px;
+  border: 1px solid rgb(255 255 255 / 80%);
+  border-radius: 22px;
+  box-shadow: 0 24px 70px rgb(24 48 42 / 12%);
+}
+
+.profile-test-root .school-page .login-card h1 {
+  margin-bottom: 28px;
+  color: var(--admin-ink);
+  font-family: "Unbounded", sans-serif;
+  font-size: clamp(24px, 5vw, 32px);
+  line-height: 1.2;
+}
+
+.profile-test-root .school-page .login-card label {
+  color: var(--admin-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.profile-test-root .school-page .login-card form button {
+  margin-top: 8px;
+  border-color: var(--admin-green);
+  background: var(--admin-green);
+  color: #10250f;
+  font-weight: 800;
+}
+
+.profile-test-root .school-dashboard {
+  min-height: 100vh;
+  max-width: none;
+  padding: 32px clamp(18px, 4vw, 64px) 64px;
+  background:
+    radial-gradient(circle at 95% 0%, rgb(96 200 73 / 12%), transparent 30rem),
+    var(--admin-wash);
+  color: var(--admin-ink);
+}
+
+.profile-test-root .school-dashboard button,
+.profile-test-root .school-page button,
+.profile-test-root .school-dashboard input,
+.profile-test-root .school-dashboard select,
+.profile-test-root .school-page input {
+  border-color: var(--admin-line);
+  border-radius: 10px;
+}
+
+.profile-test-root .school-dashboard button,
+.profile-test-root .school-page button {
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.profile-test-root .school-dashboard button:hover:not(:disabled),
+.profile-test-root .school-page button:hover:not(:disabled) {
+  border-color: #b8d1c5;
+  background: #f3f8f5;
+  box-shadow: 0 5px 16px rgb(24 48 42 / 8%);
+  transform: translateY(-1px);
+}
+
+.profile-test-root .school-dashboard button:focus-visible,
+.profile-test-root .school-page button:focus-visible,
+.profile-test-root .school-dashboard input:focus-visible,
+.profile-test-root .school-page input:focus-visible,
+.profile-test-root .school-dashboard select:focus-visible {
+  outline: 3px solid rgb(79 189 59 / 30%);
+  outline-offset: 2px;
+}
+
+.profile-test-root .school-dashboard .school-header {
+  align-items: flex-start;
+  margin: 0 auto 24px;
+  padding: 8px 2px 16px;
+}
+
+.profile-test-root .school-title {
+  max-width: 720px;
+}
+
+.profile-test-root .school-eyebrow {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--admin-green-dark);
+  font-family: "Unbounded", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.profile-test-root .school-title h1 {
+  margin-bottom: 10px;
+  font-family: "Unbounded", sans-serif;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+
+.profile-test-root .school-title p {
+  max-width: 650px;
+  margin-bottom: 0;
+  color: var(--admin-muted);
+}
+
+.profile-test-root .school-dashboard .header-actions {
+  padding-top: 3px;
+}
+
+.profile-test-root .school-dashboard .language-toggle {
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--admin-line);
+  border-radius: 11px;
+  background: #fff;
+}
+
+.profile-test-root .school-dashboard .language-toggle button,
+.profile-test-root .school-page .language-toggle button {
+  border: 0;
+  border-radius: 7px;
+  box-shadow: none;
+}
+
+.profile-test-root .school-dashboard .language-toggle button[aria-pressed="true"],
+.profile-test-root .school-page .language-toggle button[aria-pressed="true"] {
+  background: var(--admin-ink);
+  color: #fff;
+}
+
+.profile-test-root .school-dashboard .admin-section {
+  margin-top: 18px;
+  padding: clamp(20px, 3vw, 30px);
+  border: 1px solid var(--admin-line);
+  border-radius: 18px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 14px 38px rgb(24 48 42 / 6%);
+}
+
+.profile-test-root .school-dashboard .section-heading {
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.profile-test-root .school-dashboard .section-heading > div {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.profile-test-root .school-dashboard .section-heading h2 {
+  margin: 0;
+  font-family: "Unbounded", sans-serif;
+  font-size: clamp(18px, 2vw, 24px);
+  letter-spacing: -0.025em;
+}
+
+.profile-test-root .section-kicker {
+  color: var(--admin-green-dark);
+  font-family: "Unbounded", sans-serif;
+  font-size: 10px;
+}
+
+.profile-test-root .school-dashboard .inline-form {
+  align-items: end;
+  padding: 16px;
+  border-radius: 13px;
+  background: var(--admin-wash);
+}
+
+.profile-test-root .school-dashboard .inline-form label,
+.profile-test-root .school-dashboard .filter-bar span,
+.profile-test-root .test-address span {
+  color: var(--admin-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.profile-test-root .school-dashboard .inline-form button {
+  border-color: var(--admin-green);
+  background: var(--admin-green);
+  color: #10250f;
+  font-weight: 800;
+}
+
+.profile-test-root .school-dashboard .inline-form button:hover:not(:disabled) {
+  border-color: #42a831;
+  background: #57c843;
+}
+
+.profile-test-root .test-address {
+  margin: 0 0 20px;
+  padding: 15px 16px;
+  border: 1px solid #cfe5d5;
+  border-left: 4px solid var(--admin-green);
+  border-radius: 12px;
+  background: #f4fbf3;
+}
+
+.profile-test-root .test-address > div {
+  display: grid;
+  grid-template-columns: max-content minmax(240px, 1fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-test-root .test-address input {
+  width: 100%;
+  border-color: transparent;
+  background: transparent;
+  color: var(--admin-green-dark);
+  font-weight: 700;
+}
+
+.profile-test-root .school-dashboard .filter-bar {
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #e6eee9;
+  border-radius: 13px;
+  background: #f8fbf9;
+}
+
+.profile-test-root .school-dashboard .filter-bar label {
+  flex: 1 1 220px;
+}
+
+.profile-test-root .school-dashboard .filter-bar input,
+.profile-test-root .school-dashboard .filter-bar select {
+  width: 100%;
+  min-width: 0;
+  background-color: #fff;
+}
+
+.profile-test-root .school-dashboard .table-scroll {
+  border: 1px solid var(--admin-line);
+  border-radius: 13px;
+  background: #fff;
+  scrollbar-color: #bdd3c8 transparent;
+}
+
+.profile-test-root .school-dashboard table {
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #29423a;
+  font-size: 13px;
+}
+
+.profile-test-root .school-dashboard th,
+.profile-test-root .school-dashboard td {
+  padding: 13px 14px;
+  border: 0;
+  border-bottom: 1px solid #e8efeb;
+}
+
+.profile-test-root .school-dashboard th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  background: #edf5f0;
+  color: #536a62;
+  font-size: 11px;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.profile-test-root .school-dashboard tbody tr:nth-child(even) {
+  background: #fbfdfc;
+}
+
+.profile-test-root .school-dashboard tbody tr {
+  transition: background-color 140ms ease;
+}
+
+.profile-test-root .school-dashboard tbody tr:hover {
+  background: #f2f8f4;
+}
+
+.profile-test-root .school-dashboard tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.profile-test-root .code-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-test-root .code-cell code,
+.profile-test-root .unavailable-link code {
+  padding: 7px 9px;
+  border: 1px solid #cee1d6;
+  border-radius: 8px;
+  background: #f2f8f4;
+  color: #174f26;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+}
+
+.profile-test-root .copy-code-button {
+  min-height: 34px;
+  padding: 6px 10px;
+  color: var(--admin-green-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.profile-test-root .school-dashboard .status-badge {
+  border: 0;
+  border-radius: 999px;
+  background: #edf1ef;
+  color: #4f625b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.profile-test-root .school-dashboard .status-badge[data-status="sent_not_started"] {
+  background: #fff4c7;
+  color: #765600;
+}
+
+.profile-test-root .school-dashboard .status-badge[data-status="in_progress"] {
+  background: #e1f0ff;
+  color: #145da0;
+}
+
+.profile-test-root .school-dashboard .status-badge[data-status="completed"] {
+  background: #dcf4df;
+  color: #236b32;
+}
+
+.profile-test-root .school-dashboard .danger-button {
+  border-color: #efd0d0;
+  background: #fffafa;
+  color: #a43b3b;
+}
+
+.profile-test-root .school-dashboard .error-message {
+  padding: 12px 14px;
+  border: 1px solid #efd0d0;
+  border-radius: 10px;
+  background: #fff7f7;
 }
 
 .profile-test-root .report-builder {
@@ -558,13 +938,51 @@
   }
 
   .profile-test-root .school-dashboard {
-    padding: 14px;
+    padding: 20px 12px 40px;
   }
 
   .profile-test-root .school-header,
   .profile-test-root .section-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .profile-test-root .school-dashboard .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .profile-test-root .school-dashboard .admin-section {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+
+  .profile-test-root .school-dashboard .section-heading > div {
+    align-items: flex-start;
+  }
+
+  .profile-test-root .test-address > div {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .profile-test-root .test-address input {
+    padding: 8px 0;
+    font-size: 13px;
+  }
+
+  .profile-test-root .school-dashboard .inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profile-test-root .school-dashboard .inline-form input {
+    width: 100%;
+  }
+
+  .profile-test-root .school-page .login-card {
+    padding: 28px 20px;
+    border-radius: 18px;
   }
 
   .profile-test-root .result-details {

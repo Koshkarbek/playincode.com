@@ -42,6 +42,7 @@ type Invitation = {
 };
 
 type SchoolData = {
+  testUrl: string;
   content: {
     profiles: Record<ProfileKey, ProfileContent>;
     questions: Question[];
@@ -82,14 +83,16 @@ const translations = {
       "Удалить пакет, все ссылки, ответы и результаты в нём? Это действие нельзя отменить.",
     confirmRecord:
       "Удалить эту ссылку, ответы и результат? Это действие нельзя отменить.",
-    code: "Код",
-    personalLink: "Персональная ссылка",
+    code: "Персональный код",
+    testAddress: "Общий адрес теста",
     copyLink: "Копировать",
     copied: "Скопировано",
     copyError: "Не удалось скопировать ссылку.",
     linkUnavailable: "Адрес недоступен",
     linkUnavailableHint:
-      "Эта ссылка была создана до сохранения адресов. Удалите старый пакет и создайте новый.",
+      "Для этой старой записи не сохранён токен. Её прежняя ссылка продолжает работать.",
+    shareMessage: (url: string, code: string) =>
+      `Тест Play In Code: ${url}\nВаш персональный код: ${code}`,
     status: "Статус",
     delivery: "Отправка",
     language: "Язык",
@@ -165,14 +168,16 @@ const translations = {
       "Delete this batch and all its links, answers, and results? This cannot be undone.",
     confirmRecord:
       "Delete this link, its answers, and its result? This cannot be undone.",
-    code: "Code",
-    personalLink: "Personal link",
+    code: "Personal code",
+    testAddress: "Shared test address",
     copyLink: "Copy",
     copied: "Copied",
     copyError: "Could not copy the link.",
     linkUnavailable: "Address unavailable",
     linkUnavailableHint:
-      "This link was created before addresses were stored. Delete the old batch and create a new one.",
+      "This older record has no stored token. Its previous link remains unchanged.",
+    shareMessage: (url: string, code: string) =>
+      `Play In Code test: ${url}\nYour personal code: ${code}`,
     status: "Status",
     delivery: "Delivery",
     language: "Language",
@@ -406,9 +411,11 @@ export function SchoolClient() {
   }
 
   async function copyLink(invitation: Invitation) {
-    if (!invitation.url) return;
+    if (!invitation.url || !data?.testUrl) return;
     try {
-      await navigator.clipboard.writeText(invitation.url);
+      await navigator.clipboard.writeText(
+        ui.shareMessage(data.testUrl, invitation.code),
+      );
       setCopiedId(invitation.id);
       window.setTimeout(() => {
         setCopiedId((current) =>
@@ -595,7 +602,11 @@ export function SchoolClient() {
   return (
     <main className="school-dashboard">
       <header className="school-header">
-        <h1>{ui.title}</h1>
+        <div className="school-title">
+          <span className="school-eyebrow">Play In Code</span>
+          <h1>{ui.title}</h1>
+          <p>{ui.testDisclaimer}</p>
+        </div>
         <div className="header-actions">
           <div className="language-toggle" aria-label="Language">
             <button
@@ -619,7 +630,6 @@ export function SchoolClient() {
         </div>
       </header>
 
-      <p className="disclaimer">{ui.testDisclaimer}</p>
       {error ? (
         <p className="error-message" role="alert">
           {error}
@@ -627,7 +637,12 @@ export function SchoolClient() {
       ) : null}
 
       <section className="admin-section">
-        <h2>{ui.createBatch}</h2>
+        <div className="section-heading">
+          <div>
+            <span className="section-kicker">01</span>
+            <h2>{ui.createBatch}</h2>
+          </div>
+        </div>
         <div className="inline-form">
           <label htmlFor="link-count">{ui.linkCount}</label>
           <input
@@ -646,7 +661,10 @@ export function SchoolClient() {
 
       <section className="admin-section">
         <div className="section-heading">
-          <h2>{ui.batches}</h2>
+          <div>
+            <span className="section-kicker">02</span>
+            <h2>{ui.batches}</h2>
+          </div>
         </div>
         {!data?.batches.length ? (
           <p>{ui.noData}</p>
@@ -707,7 +725,10 @@ export function SchoolClient() {
 
       <section className="admin-section">
         <div className="section-heading">
-          <h2>{ui.results}</h2>
+          <div>
+            <span className="section-kicker">03</span>
+            <h2>{ui.results}</h2>
+          </div>
           <button
             type="button"
             disabled={!data?.invitations.length}
@@ -716,6 +737,20 @@ export function SchoolClient() {
             {ui.exportResults}
           </button>
         </div>
+        {data ? (
+          <div className="test-address">
+            <div>
+              <span>{ui.testAddress}</span>
+              <input
+                type="text"
+                readOnly
+                value={data.testUrl}
+                aria-label={ui.testAddress}
+                onFocus={(event) => event.currentTarget.select()}
+              />
+            </div>
+          </div>
+        ) : null}
         {data?.invitations.length ? (
           <div className="filter-bar" aria-label={ui.filters}>
             <label>
@@ -772,7 +807,6 @@ export function SchoolClient() {
               <thead>
                 <tr>
                   <th>{ui.code}</th>
-                  <th>{ui.personalLink}</th>
                   <th>{ui.status}</th>
                   <th>{ui.delivery}</th>
                   <th>{ui.language}</th>
@@ -794,21 +828,13 @@ export function SchoolClient() {
                   const workflow = workflowKey(invitation);
                   return (
                     <tr key={invitation.id}>
-                      <td>{invitation.code}</td>
                       <td>
                         {invitation.url ? (
-                          <div className="link-cell">
-                            <input
-                              type="text"
-                              readOnly
-                              value={invitation.url}
-                              aria-label={`${ui.personalLink}: ${invitation.code}`}
-                              onFocus={(event) =>
-                                event.currentTarget.select()
-                              }
-                            />
+                          <div className="code-cell">
+                            <code>{invitation.code}</code>
                             <button
                               type="button"
+                              className="copy-code-button"
                               onClick={() => copyLink(invitation)}
                             >
                               {copiedId === invitation.id
@@ -818,6 +844,7 @@ export function SchoolClient() {
                           </div>
                         ) : (
                           <div className="unavailable-link">
+                            <code>{invitation.code}</code>
                             <strong>{ui.linkUnavailable}</strong>
                             <small>{ui.linkUnavailableHint}</small>
                           </div>
