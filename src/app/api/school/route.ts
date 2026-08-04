@@ -77,6 +77,8 @@ export async function GET(request: NextRequest) {
         firstSentAt: invitation.firstSentAt,
         lastSentAt: invitation.lastSentAt,
         sendCount: invitation.sendCount,
+        adminNote: invitation.adminNote,
+        adminNoteUpdatedAt: invitation.adminNoteUpdatedAt,
         answers: (answersByInvitation.get(invitation.id) ?? []).map(
           (answer) => ({
             questionId: answer.questionId,
@@ -114,11 +116,54 @@ export async function POST(request: NextRequest) {
     action?: unknown;
     count?: unknown;
     invitationId?: unknown;
+    note?: unknown;
   };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "invalid_request" }, { status: 400 });
+  }
+
+  if (body.action === "update_note") {
+    if (
+      typeof body.invitationId !== "string" ||
+      body.invitationId.length === 0 ||
+      body.invitationId.length > 100
+    ) {
+      return NextResponse.json(
+        { error: "invalid_invitation" },
+        { status: 400 },
+      );
+    }
+    if (typeof body.note !== "string" || body.note.length > 1000) {
+      return NextResponse.json({ error: "invalid_note" }, { status: 400 });
+    }
+
+    const db = await getDb();
+    const updatedAt = Date.now();
+    const [updated] = await db
+      .update(invitations)
+      .set({
+        adminNote: body.note.length > 0 ? body.note : null,
+        adminNoteUpdatedAt: body.note.length > 0 ? updatedAt : null,
+      })
+      .where(eq(invitations.id, body.invitationId))
+      .returning({
+        id: invitations.id,
+        adminNote: invitations.adminNote,
+        adminNoteUpdatedAt: invitations.adminNoteUpdatedAt,
+      });
+    if (!updated) {
+      return NextResponse.json(
+        { error: "invitation_not_found" },
+        { status: 404 },
+      );
+    }
+    return NextResponse.json({
+      invitationId: updated.id,
+      adminNote: updated.adminNote,
+      adminNoteUpdatedAt: updated.adminNoteUpdatedAt,
+    });
   }
 
   if (body.action === "mark_sent" || body.action === "reset_sent") {
@@ -251,9 +296,7 @@ export async function POST(request: NextRequest) {
   );
 
   await runDbBatch((batchDb) => [
-    batchDb
-      .insert(batches)
-      .values({ id: batchId, createdAt, quantity: count }),
+    batchDb.insert(batches).values({ id: batchId, createdAt, quantity: count }),
     batchDb.insert(invitations).values(
       generated.map((item) => ({
         id: item.id,

@@ -1,6 +1,13 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FormEvent,
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type {
   BaseType,
   Locale,
@@ -38,6 +45,8 @@ type Invitation = {
   firstSentAt: number | null;
   lastSentAt: number | null;
   sendCount: number;
+  adminNote: string | null;
+  adminNoteUpdatedAt: number | null;
   answers: StoredAnswer[];
 };
 
@@ -99,7 +108,7 @@ const translations = {
     progress: "Прогресс",
     completed: "Завершён",
     profile: "Профиль",
-    details: "Подробности",
+    details: "Детали",
     noData: "Данных пока нет.",
     noMatches: "По выбранным фильтрам ничего не найдено.",
     ready: "Не отправлена",
@@ -118,7 +127,7 @@ const translations = {
     filters: "Фильтры",
     allBatches: "Все пакеты",
     allStatuses: "Все статусы",
-    searchCode: "Поиск по коду",
+    searchCode: "Поиск по коду или комментарию",
     batchNotSent: "не отправлено",
     batchWaiting: "ожидают",
     batchInProgress: "в процессе",
@@ -142,7 +151,16 @@ const translations = {
     csvCompleted: "Завершён",
     csvStatus: "Статус",
     csvProfile: "Итоговый профиль",
+    csvComment: "Комментарий",
     createReport: "Составить профиль",
+    comment: "Комментарий",
+    commentPlaceholder: "Имя родителя, что отправлено и договорённости",
+    saveComment: "Сохранить",
+    savingComment: "Сохранение…",
+    commentSaved: "Сохранено",
+    commentError: "Не удалось сохранить комментарий.",
+    closeDetails: "Закрыть",
+    technicalData: "Данные прохождения",
   },
   en: {
     title: "Test Results",
@@ -203,7 +221,7 @@ const translations = {
     filters: "Filters",
     allBatches: "All batches",
     allStatuses: "All statuses",
-    searchCode: "Search by code",
+    searchCode: "Search by code or comment",
     batchNotSent: "not sent",
     batchWaiting: "waiting",
     batchInProgress: "in progress",
@@ -227,7 +245,16 @@ const translations = {
     csvCompleted: "Completed",
     csvStatus: "Status",
     csvProfile: "Final profile",
+    csvComment: "Comment",
     createReport: "Create student profile",
+    comment: "Comment",
+    commentPlaceholder: "Parent name, what was sent, and agreements",
+    saveComment: "Save",
+    savingComment: "Saving…",
+    commentSaved: "Saved",
+    commentError: "Could not save the comment.",
+    closeDetails: "Close",
+    technicalData: "Attempt data",
   },
 } as const;
 
@@ -248,15 +275,10 @@ function downloadCsv(filename: string, rows: unknown[][]) {
   URL.revokeObjectURL(url);
 }
 
-function workflowKey(invitation: Invitation): Exclude<
-  WorkflowFilter,
-  "all"
-> {
+function workflowKey(invitation: Invitation): Exclude<WorkflowFilter, "all"> {
   if (invitation.status === "completed") return "completed";
   if (invitation.status === "in_progress") return "in_progress";
-  return invitation.sendCount > 0
-    ? "sent_not_started"
-    : "not_sent";
+  return invitation.sendCount > 0 ? "sent_not_started" : "not_sent";
 }
 
 export function SchoolClient() {
@@ -270,9 +292,13 @@ export function SchoolClient() {
   const [busy, setBusy] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [batchFilter, setBatchFilter] = useState("all");
-  const [workflowFilter, setWorkflowFilter] =
-    useState<WorkflowFilter>("all");
+  const [workflowFilter, setWorkflowFilter] = useState<WorkflowFilter>("all");
   const [codeSearch, setCodeSearch] = useState("");
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [savingNoteId, setSavingNoteId] = useState<string | null>(null);
+  const [savedNoteId, setSavedNoteId] = useState<string | null>(null);
+  const [noteErrors, setNoteErrors] = useState<Record<string, string>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [reportTarget, setReportTarget] = useState<{
     invitationId: string;
     profileKey: ProfileKey;
@@ -326,9 +352,7 @@ export function SchoolClient() {
       if (!response.ok) {
         const result = (await response.json()) as { error?: string };
         setError(
-          result.error === "rate_limited"
-            ? ui.rateLimited
-            : ui.wrongPassword,
+          result.error === "rate_limited" ? ui.rateLimited : ui.wrongPassword,
         );
         return;
       }
@@ -372,8 +396,7 @@ export function SchoolClient() {
   }
 
   async function remove(scope: "batch" | "invitation", id: string) {
-    const message =
-      scope === "batch" ? ui.confirmBatch : ui.confirmRecord;
+    const message = scope === "batch" ? ui.confirmBatch : ui.confirmRecord;
     if (!window.confirm(message)) return;
     setBusy(true);
     setError("");
@@ -418,9 +441,7 @@ export function SchoolClient() {
       );
       setCopiedId(invitation.id);
       window.setTimeout(() => {
-        setCopiedId((current) =>
-          current === invitation.id ? null : current,
-        );
+        setCopiedId((current) => (current === invitation.id ? null : current));
       }, 1600);
     } catch {
       setError(ui.copyError);
@@ -431,10 +452,7 @@ export function SchoolClient() {
     action: "mark_sent" | "reset_sent",
     invitation: Invitation,
   ) {
-    if (
-      action === "reset_sent" &&
-      !window.confirm(ui.confirmResetSent)
-    ) {
+    if (action === "reset_sent" && !window.confirm(ui.confirmResetSent)) {
       return;
     }
     setBusy(true);
@@ -457,6 +475,58 @@ export function SchoolClient() {
     }
   }
 
+  async function saveNote(invitation: Invitation) {
+    const note = noteDrafts[invitation.id] ?? invitation.adminNote ?? "";
+    setSavingNoteId(invitation.id);
+    setSavedNoteId(null);
+    setNoteErrors((current) => ({ ...current, [invitation.id]: "" }));
+    try {
+      const response = await fetch("/api/school", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_note",
+          invitationId: invitation.id,
+          note,
+        }),
+      });
+      if (!response.ok) throw new Error("note_failed");
+      const result = (await response.json()) as {
+        adminNote: string | null;
+        adminNoteUpdatedAt: number | null;
+      };
+      setData((current) =>
+        current
+          ? {
+              ...current,
+              invitations: current.invitations.map((item) =>
+                item.id === invitation.id
+                  ? {
+                      ...item,
+                      adminNote: result.adminNote,
+                      adminNoteUpdatedAt: result.adminNoteUpdatedAt,
+                    }
+                  : item,
+              ),
+            }
+          : current,
+      );
+      setSavedNoteId(invitation.id);
+      window.setTimeout(() => {
+        setSavedNoteId((current) =>
+          current === invitation.id ? null : current,
+        );
+      }, 1600);
+    } catch {
+      setNoteErrors((current) => ({
+        ...current,
+        [invitation.id]: ui.commentError,
+      }));
+    } finally {
+      setSavingNoteId(null);
+    }
+  }
+
   function downloadResultsCsv() {
     if (!data) return;
     const headers = [
@@ -472,14 +542,15 @@ export function SchoolClient() {
       "D",
       ui.total,
       ui.csvProfile,
+      ui.csvComment,
       ...data.content.questions.map(
         (question) => `${ui.question} ${question.id}`,
       ),
     ];
     const rows = data.invitations.map((invitation) => {
       const profile = invitation.profileKey
-        ? data.content.profiles[invitation.profileKey]?.title[locale] ??
-          invitation.profileKey
+        ? (data.content.profiles[invitation.profileKey]?.title[locale] ??
+          invitation.profileKey)
         : "";
       const answers = new Map(
         invitation.answers.map((answer) => [
@@ -506,6 +577,7 @@ export function SchoolClient() {
         invitation.scores?.D ?? "",
         total,
         profile,
+        invitation.adminNote ?? "",
         ...data.content.questions.map(
           (question) => answers.get(question.id) ?? "",
         ),
@@ -527,10 +599,7 @@ export function SchoolClient() {
   const filteredInvitations = useMemo(() => {
     const normalizedSearch = codeSearch.trim().toUpperCase();
     return (data?.invitations ?? []).filter((invitation) => {
-      if (
-        batchFilter !== "all" &&
-        invitation.batchId !== batchFilter
-      ) {
+      if (batchFilter !== "all" && invitation.batchId !== batchFilter) {
         return false;
       }
       if (
@@ -541,7 +610,8 @@ export function SchoolClient() {
       }
       return (
         normalizedSearch.length === 0 ||
-        invitation.code.toUpperCase().includes(normalizedSearch)
+        invitation.code.toUpperCase().includes(normalizedSearch) ||
+        (invitation.adminNote ?? "").toUpperCase().includes(normalizedSearch)
       );
     });
   }, [batchFilter, codeSearch, data, workflowFilter]);
@@ -700,9 +770,8 @@ export function SchoolClient() {
                       <td>{batch.quantity}</td>
                       <td>
                         {notSent} {ui.batchNotSent} · {waiting}{" "}
-                        {ui.batchWaiting} · {inProgress}{" "}
-                        {ui.batchInProgress} · {completed}{" "}
-                        {ui.batchCompleted}
+                        {ui.batchWaiting} · {inProgress} {ui.batchInProgress} ·{" "}
+                        {completed} {ui.batchCompleted}
                       </td>
                       <td>
                         <button
@@ -723,7 +792,7 @@ export function SchoolClient() {
         )}
       </section>
 
-      <section className="admin-section">
+      <section className="admin-section results-section">
         <div className="section-heading">
           <div>
             <span className="section-kicker">03</span>
@@ -772,16 +841,12 @@ export function SchoolClient() {
               <select
                 value={workflowFilter}
                 onChange={(event) =>
-                  setWorkflowFilter(
-                    event.target.value as WorkflowFilter,
-                  )
+                  setWorkflowFilter(event.target.value as WorkflowFilter)
                 }
               >
                 <option value="all">{ui.allStatuses}</option>
                 <option value="not_sent">{ui.ready}</option>
-                <option value="sent_not_started">
-                  {ui.sentNotStarted}
-                </option>
+                <option value="sent_not_started">{ui.sentNotStarted}</option>
                 <option value="in_progress">{ui.inProgress}</option>
                 <option value="completed">{ui.complete}</option>
               </select>
@@ -804,17 +869,20 @@ export function SchoolClient() {
         ) : (
           <div className="table-scroll">
             <table className="results-table">
+              <colgroup>
+                <col className="results-code-column" />
+                <col className="results-status-column" />
+                <col className="results-delivery-column" />
+                <col className="results-comment-column" />
+                <col className="results-profile-column" />
+                <col className="results-actions-column" />
+              </colgroup>
               <thead>
                 <tr>
                   <th>{ui.code}</th>
                   <th>{ui.status}</th>
                   <th>{ui.delivery}</th>
-                  <th>{ui.language}</th>
-                  <th>{ui.completed}</th>
-                  <th>A</th>
-                  <th>B</th>
-                  <th>C</th>
-                  <th>D</th>
+                  <th>{ui.comment}</th>
                   <th>{ui.profile}</th>
                   <th>{ui.details}</th>
                 </tr>
@@ -826,188 +894,252 @@ export function SchoolClient() {
                       ? data.content.profiles[invitation.profileKey]
                       : null;
                   const workflow = workflowKey(invitation);
+                  const noteValue =
+                    noteDrafts[invitation.id] ?? invitation.adminNote ?? "";
+                  const noteChanged =
+                    noteValue !== (invitation.adminNote ?? "");
                   return (
-                    <tr key={invitation.id}>
-                      <td>
-                        {invitation.url ? (
-                          <div className="code-cell">
-                            <code>{invitation.code}</code>
-                            <button
-                              type="button"
-                              className="copy-code-button"
-                              onClick={() => copyLink(invitation)}
-                            >
-                              {copiedId === invitation.id
-                                ? ui.copied
-                                : ui.copyLink}
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="unavailable-link">
-                            <code>{invitation.code}</code>
-                            <strong>{ui.linkUnavailable}</strong>
-                            <small>{ui.linkUnavailableHint}</small>
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <span
-                          className="status-badge"
-                          data-status={workflow}
-                        >
-                          {workflowLabel(invitation)}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="delivery-cell">
-                          {invitation.sendCount > 0 ? (
-                            <dl>
-                              <div>
-                                <dt>{ui.sentCount}</dt>
-                                <dd>{invitation.sendCount}</dd>
-                              </div>
-                              <div>
-                                <dt>{ui.firstSent}</dt>
-                                <dd>
-                                  {formatDate(invitation.firstSentAt)}
-                                </dd>
-                              </div>
-                              <div>
-                                <dt>{ui.lastSent}</dt>
-                                <dd>
-                                  {formatDate(invitation.lastSentAt)}
-                                </dd>
-                              </div>
-                            </dl>
-                          ) : (
-                            <span>—</span>
-                          )}
-                          {invitation.url &&
-                          invitation.status === "ready" &&
-                          invitation.progress === 0 ? (
-                            <div className="delivery-actions">
+                    <Fragment key={invitation.id}>
+                      <tr>
+                        <td>
+                          {invitation.url ? (
+                            <div className="code-cell">
+                              <code>{invitation.code}</code>
                               <button
                                 type="button"
-                                disabled={busy}
-                                onClick={() =>
-                                  updateDelivery(
-                                    "mark_sent",
-                                    invitation,
-                                  )
-                                }
+                                className="copy-code-button"
+                                onClick={() => copyLink(invitation)}
                               >
-                                {invitation.sendCount > 0
-                                  ? ui.markResent
-                                  : ui.markSent}
+                                {copiedId === invitation.id
+                                  ? ui.copied
+                                  : ui.copyLink}
                               </button>
-                              {invitation.sendCount > 0 ? (
+                            </div>
+                          ) : (
+                            <div className="unavailable-link">
+                              <code>{invitation.code}</code>
+                              <strong>{ui.linkUnavailable}</strong>
+                              <small>{ui.linkUnavailableHint}</small>
+                            </div>
+                          )}
+                        </td>
+                        <td>
+                          <span className="status-badge" data-status={workflow}>
+                            {workflowLabel(invitation)}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="delivery-cell compact-delivery-cell">
+                            {invitation.sendCount > 0 ? (
+                              <span className="delivery-summary">
+                                <strong>{invitation.sendCount}×</strong>{" "}
+                                {formatDate(invitation.lastSentAt)}
+                              </span>
+                            ) : (
+                              <span>—</span>
+                            )}
+                            {invitation.url &&
+                            invitation.status === "ready" &&
+                            invitation.progress === 0 ? (
+                              <div className="delivery-actions">
                                 <button
                                   type="button"
                                   disabled={busy}
                                   onClick={() =>
-                                    updateDelivery(
-                                      "reset_sent",
-                                      invitation,
-                                    )
+                                    updateDelivery("mark_sent", invitation)
                                   }
                                 >
-                                  {ui.resetSent}
+                                  {invitation.sendCount > 0
+                                    ? ui.markResent
+                                    : ui.markSent}
                                 </button>
-                              ) : null}
-                            </div>
-                          ) : null}
-                        </div>
-                      </td>
-                      <td>{invitation.locale?.toUpperCase() ?? "—"}</td>
-                      <td>{formatDate(invitation.completedAt)}</td>
-                      <td>{invitation.scores?.A ?? "—"}</td>
-                      <td>{invitation.scores?.B ?? "—"}</td>
-                      <td>{invitation.scores?.C ?? "—"}</td>
-                      <td>{invitation.scores?.D ?? "—"}</td>
-                      <td>{profile?.title[locale] ?? "—"}</td>
-                      <td>
-                        <details>
-                          <summary>{ui.details}</summary>
-                          <div className="result-details">
-                            {invitation.scores ? (
-                              <p className="score-line">
-                                A: {invitation.scores.A}, B:{" "}
-                                {invitation.scores.B}, C:{" "}
-                                {invitation.scores.C}, D:{" "}
-                                {invitation.scores.D}
-                              </p>
+                                {invitation.sendCount > 0 ? (
+                                  <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      updateDelivery("reset_sent", invitation)
+                                    }
+                                  >
+                                    {ui.resetSent}
+                                  </button>
+                                ) : null}
+                              </div>
                             ) : null}
-                            {profile ? (
-                              <>
-                                <h3>{profile.title[locale]}</h3>
-                                <h4>{ui.recommendations}</h4>
-                                {profile.sections.map((section) => (
-                                  <p key={section.label.en}>
-                                    <strong>{section.label[locale]}:</strong>{" "}
-                                    {section.text[locale]}
-                                  </p>
-                                ))}
-                              </>
-                            ) : null}
-                            {invitation.answers.length > 0 ? (
-                              <>
-                                <h4>{ui.answers}</h4>
-                                <ol>
-                                  {invitation.answers.map((answer) => {
-                                    const question =
-                                      data.content.questions[
-                                        answer.questionId - 1
-                                      ];
-                                    const answerLocale =
-                                      invitation.locale ?? locale;
-                                    return (
-                                      <li key={answer.questionId}>
-                                        <strong>
-                                          {question.prompt[answerLocale]}
-                                        </strong>
-                                        <br />
-                                        {answer.baseType}:{" "}
-                                        {
-                                          question.answers[answer.baseType][
-                                            answerLocale
-                                          ]
-                                        }
-                                      </li>
-                                    );
-                                  })}
-                                </ol>
-                              </>
-                            ) : null}
-                            {invitation.status === "completed" &&
-                            invitation.profileKey ? (
+                          </div>
+                        </td>
+                        <td>
+                          <div className="admin-note-cell">
+                            <textarea
+                              rows={2}
+                              maxLength={1000}
+                              aria-label={`${ui.comment}: ${invitation.code}`}
+                              placeholder={ui.commentPlaceholder}
+                              value={noteValue}
+                              onChange={(event) =>
+                                setNoteDrafts((current) => ({
+                                  ...current,
+                                  [invitation.id]: event.target.value,
+                                }))
+                              }
+                            />
+                            <div className="admin-note-actions">
                               <button
                                 type="button"
-                                className="primary-button"
+                                disabled={
+                                  !noteChanged || savingNoteId === invitation.id
+                                }
+                                onClick={() => saveNote(invitation)}
+                              >
+                                {savingNoteId === invitation.id
+                                  ? ui.savingComment
+                                  : savedNoteId === invitation.id
+                                    ? ui.commentSaved
+                                    : ui.saveComment}
+                              </button>
+                              <small>{noteValue.length}/1000</small>
+                            </div>
+                            {noteErrors[invitation.id] ? (
+                              <small className="admin-note-error" role="alert">
+                                {noteErrors[invitation.id]}
+                              </small>
+                            ) : null}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="profile-name">
+                            {profile?.title[locale] ?? "—"}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            className="details-button"
+                            aria-expanded={expandedId === invitation.id}
+                            onClick={() =>
+                              setExpandedId((current) =>
+                                current === invitation.id
+                                  ? null
+                                  : invitation.id,
+                              )
+                            }
+                          >
+                            {expandedId === invitation.id
+                              ? ui.closeDetails
+                              : ui.details}
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedId === invitation.id ? (
+                        <tr className="details-row">
+                          <td colSpan={6}>
+                            <div className="result-details">
+                              <h3>{ui.technicalData}</h3>
+                              <dl className="attempt-meta">
+                                <div>
+                                  <dt>{ui.language}</dt>
+                                  <dd>
+                                    {invitation.locale?.toUpperCase() ?? "—"}
+                                  </dd>
+                                </div>
+                                <div>
+                                  <dt>{ui.completed}</dt>
+                                  <dd>{formatDate(invitation.completedAt)}</dd>
+                                </div>
+                                <div>
+                                  <dt>{ui.sentCount}</dt>
+                                  <dd>{invitation.sendCount}</dd>
+                                </div>
+                                <div>
+                                  <dt>{ui.firstSent}</dt>
+                                  <dd>{formatDate(invitation.firstSentAt)}</dd>
+                                </div>
+                                <div>
+                                  <dt>{ui.lastSent}</dt>
+                                  <dd>{formatDate(invitation.lastSentAt)}</dd>
+                                </div>
+                              </dl>
+                              {invitation.scores ? (
+                                <p className="score-line">
+                                  A: {invitation.scores.A}, B:{" "}
+                                  {invitation.scores.B}, C:{" "}
+                                  {invitation.scores.C}, D:{" "}
+                                  {invitation.scores.D}
+                                </p>
+                              ) : null}
+                              {profile ? (
+                                <>
+                                  <h3>{profile.title[locale]}</h3>
+                                  <h4>{ui.recommendations}</h4>
+                                  {profile.sections.map((section) => (
+                                    <p key={section.label.en}>
+                                      <strong>{section.label[locale]}:</strong>{" "}
+                                      {section.text[locale]}
+                                    </p>
+                                  ))}
+                                </>
+                              ) : null}
+                              {invitation.answers.length > 0 ? (
+                                <>
+                                  <h4>{ui.answers}</h4>
+                                  <ol>
+                                    {invitation.answers.map((answer) => {
+                                      const question =
+                                        data.content.questions[
+                                          answer.questionId - 1
+                                        ];
+                                      const answerLocale =
+                                        invitation.locale ?? locale;
+                                      return (
+                                        <li key={answer.questionId}>
+                                          <strong>
+                                            {question.prompt[answerLocale]}
+                                          </strong>
+                                          <br />
+                                          {answer.baseType}:{" "}
+                                          {
+                                            question.answers[answer.baseType][
+                                              answerLocale
+                                            ]
+                                          }
+                                        </li>
+                                      );
+                                    })}
+                                  </ol>
+                                </>
+                              ) : null}
+                              {invitation.status === "completed" &&
+                              invitation.profileKey ? (
+                                <button
+                                  type="button"
+                                  className="primary-button"
+                                  onClick={() =>
+                                    setReportTarget({
+                                      invitationId: invitation.id,
+                                      profileKey:
+                                        invitation.profileKey as ProfileKey,
+                                      locale: invitation.locale ?? locale,
+                                    })
+                                  }
+                                >
+                                  {ui.createReport}
+                                </button>
+                              ) : null}
+                              <button
+                                type="button"
+                                className="danger-button"
+                                disabled={busy}
                                 onClick={() =>
-                                  setReportTarget({
-                                    invitationId: invitation.id,
-                                    profileKey: invitation.profileKey as ProfileKey,
-                                    locale: invitation.locale ?? locale,
-                                  })
+                                  remove("invitation", invitation.id)
                                 }
                               >
-                                {ui.createReport}
+                                {ui.deleteRecord}
                               </button>
-                            ) : null}
-                            <button
-                              type="button"
-                              className="danger-button"
-                              disabled={busy}
-                              onClick={() =>
-                                remove("invitation", invitation.id)
-                              }
-                            >
-                              {ui.deleteRecord}
-                            </button>
-                          </div>
-                        </details>
-                      </td>
-                    </tr>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
                   );
                 })}
               </tbody>

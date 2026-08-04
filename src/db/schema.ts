@@ -44,6 +44,8 @@ export const invitations = pgTable(
     firstSentAt: bigint("first_sent_at", { mode: "number" }),
     lastSentAt: bigint("last_sent_at", { mode: "number" }),
     sendCount: integer("send_count").notNull().default(0),
+    adminNote: text("admin_note"),
+    adminNoteUpdatedAt: bigint("admin_note_updated_at", { mode: "number" }),
   },
   (table) => [
     uniqueIndex("invitations_code_unique").on(table.code),
@@ -62,9 +64,7 @@ export const answers = pgTable(
     baseType: text("base_type").$type<BaseType>().notNull(),
     createdAt: bigint("created_at", { mode: "number" }).notNull(),
   },
-  (table) => [
-    primaryKey({ columns: [table.invitationId, table.questionId] }),
-  ],
+  (table) => [primaryKey({ columns: [table.invitationId, table.questionId] })],
 );
 
 export const loginAttempts = pgTable("login_attempts", {
